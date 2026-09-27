@@ -38,20 +38,23 @@ await rasterSvg(ICON_SVG(false), 512, 'assets/icons/icon-512.png');
 await rasterSvg(ICON_SVG(false), 180, 'assets/icons/apple-touch-icon.png');
 await rasterSvg(ICON_SVG(true), 512, 'assets/icons/icon-maskable-512.png');
 
-// Open Graph card
-const bg = fs.readFileSync(out('assets/bg.webp')).toString('base64');
+// Open Graph card: uses assets/og-source.png (a real screenshot) when present,
+// otherwise renders a synthetic card. Output is always 1200x630 over the app background.
 await page.setViewportSize({ width: 1200, height: 630 });
-await page.setContent(`<html><body style="margin:0;width:1200px;height:630px;position:relative;overflow:hidden;font-family:Georgia,serif;background:#030704">
+if (fs.existsSync(out('assets/og-source.png'))) {
+  const shot = fs.readFileSync(out('assets/og-source.png')).toString('base64');
+  await page.setContent(`<body style="margin:0;width:1200px;height:630px;background:#030704;display:flex;align-items:center;justify-content:center;overflow:hidden"><img src="data:image/png;base64,${shot}" style="width:1200px;height:auto;display:block"></body>`);
+} else {
+  const bg = fs.readFileSync(out('assets/bg.webp')).toString('base64');
+  await page.setContent(`<html><body style="margin:0;width:1200px;height:630px;position:relative;overflow:hidden;font-family:Georgia,serif;background:#030704">
 <img src="data:image/webp;base64,${bg}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
 <div style="position:absolute;inset:0;background:linear-gradient(168deg,rgba(2,5,3,0.45),rgba(2,4,2,0.92))"></div>
 <div style="position:absolute;left:80px;top:150px;color:#ccd7c5">
   <div style="font-size:120px;font-style:italic;color:#79a563;line-height:1">Uriel</div>
   <div style="font-family:Menlo,monospace;font-size:22px;letter-spacing:0.18em;color:#85997e;margin-top:14px">GEMATRIA ENGINE</div>
   <div style="font-size:34px;font-style:italic;margin-top:44px;max-width:900px;line-height:1.35">hebrew · greek · english ciphers<br>etymology, scripture, tree of life, tarot — private, offline</div>
-</div>
-<div style="position:absolute;right:80px;top:150px;display:grid;grid-template-columns:1fr 1fr;gap:14px;font-family:Menlo,monospace;color:#79a563">
-  ${[['ordinal', 56], ['reduced', 20], ['hebrew', 119], ['isopsephy', 373]].map(([n, v]) => `<div style="background:rgba(2,5,3,0.55);border:1px solid rgba(121,165,99,0.25);border-radius:16px;padding:18px 22px;min-width:170px"><div style="font-size:13px;color:#85997e;letter-spacing:0.1em">${n}</div><div style="font-size:44px;color:#ccd7c5;font-weight:300">${v}</div></div>`).join('')}
 </div></body></html>`);
+}
 await page.screenshot({ path: out('assets/og.png'), type: 'png' });
 await browser.close();
 console.log('assets written');

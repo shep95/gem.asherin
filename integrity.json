@@ -2,7 +2,7 @@
   "generated": "2026-09-27",
   "algorithm": "sha256",
   "files": {
-    "index.html": "2294ee564b42a718a374488cb9e2331f1a786acd07c37d7c977d4581f11f131e",
+    "index.html": "f7ee0436b1a1d6edc3791f296b79a2ef1a483591301e23cae967c2f34d5435cc",
     "offline.html": "8b708ac3a16154b5d129dfd4d8721f3c7c980205ddced6908b9b7adb75c78f44",
     "sw.js": "07d3dcb22924d37147892185992ee03006da3018dcd5b17ed1bbf14f04bb891d",
     "manifest.webmanifest": "b7ab36397f03c692aa50a0abce38b6376a69ce6b47f241e05706013e6edf6b46",
