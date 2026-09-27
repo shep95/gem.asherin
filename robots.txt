@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /sw.js
+Disallow: /js/
+Disallow: /tests/
+Disallow: /tools/
+
+Sitemap: https://shep95.github.io/gem.asherin/sitemap.xml

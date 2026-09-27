@@ -1,0 +1,8 @@
+# Uriel — security contact
+# Please report vulnerabilities responsibly. See SECURITY.md in the repository.
+Contact: https://github.com/shep95/gem.asherin/security/advisories/new
+Contact: https://github.com/shep95/gem.asherin/issues
+Expires: 2027-09-27T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://shep95.github.io/gem.asherin/.well-known/security.txt
+Policy: https://github.com/shep95/gem.asherin/blob/main/SECURITY.md

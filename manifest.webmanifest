@@ -1,0 +1,29 @@
+{
+  "name": "Uriel — Gematria Engine",
+  "short_name": "Uriel",
+  "description": "Gematria, isopsephy and numerology calculator with Hebrew, Greek and English ciphers, a 750-word corpus, etymology and tradition readings. Works offline.",
+  "id": "uriel-gematria",
+  "start_url": "./?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "any",
+  "background_color": "#030704",
+  "theme_color": "#030704",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["education", "reference", "utilities"],
+  "icons": [
+    { "src": "assets/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "screenshots": [
+    { "src": "assets/screenshot-wide.png", "sizes": "1280x800", "type": "image/png", "form_factor": "wide", "label": "Uriel analysing a word across ciphers" },
+    { "src": "assets/screenshot-narrow.png", "sizes": "390x844", "type": "image/png", "form_factor": "narrow", "label": "Uriel on a phone" }
+  ],
+  "shortcuts": [
+    { "name": "Analyze a word", "url": "./?q=logos", "description": "Open with an example word" }
+  ]
+}

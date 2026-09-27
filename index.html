@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data: blob: https://upload.wikimedia.org; media-src https://ice1.somafm.com https://stream.radioparadise.com; connect-src 'self' https://api.anthropic.com https://api.dictionaryapi.dev https://en.wikipedia.org https://bible-api.com; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; require-trusted-types-for 'script'; trusted-types uriel uriel-parse 'allow-duplicates'; upgrade-insecure-requests">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#030704">
+
+<title>Uriel — Gematria Calculator &amp; Engine · Hebrew, Greek and English Ciphers</title>
+<meta name="description" content="Uriel is a free gematria calculator and numerology engine. Analyze any word or phrase across 22 ciphers — Hebrew mispar hechrachi, Greek isopsephy, English ordinal, Pythagorean, Chaldean, Agrippa and more — with a 750-word corpus, etymology, scripture references, tree of life and tarot correspondences. Private, works offline.">
+<meta name="keywords" content="gematria calculator, gematria, isopsephy, numerology, hebrew gematria, english gematria, pythagorean numerology, chaldean numerology, cipher calculator, kabbalah, word value calculator">
+<meta name="author" content="Uriel">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://shep95.github.io/gem.asherin/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Uriel">
+<meta property="og:title" content="Uriel — Gematria Calculator &amp; Engine">
+<meta property="og:description" content="Analyze any word across Hebrew, Greek and English ciphers with etymology, scripture, tree of life and tarot correspondences. Private, offline-capable.">
+<meta property="og:url" content="https://shep95.github.io/gem.asherin/">
+<meta property="og:image" content="https://shep95.github.io/gem.asherin/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Uriel gematria engine — a word analysed across ciphers over a misty green valley">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Uriel — Gematria Calculator &amp; Engine">
+<meta name="twitter:description" content="Hebrew, Greek and English gematria with etymology, scripture and tradition readings. Private, offline-capable.">
+<meta name="twitter:image" content="https://shep95.github.io/gem.asherin/assets/og.png">
+
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml">
+<link rel="icon" href="assets/icons/icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Uriel">
+<meta name="application-name" content="Uriel">
+
+<link rel="preload" href="css/uriel.css" as="style">
+<link rel="preload" href="assets/bg.webp" as="image" type="image/webp" media="(min-width:801px)" fetchpriority="high">
+<link rel="preload" href="assets/bg-800.webp" as="image" type="image/webp" media="(max-width:800px)" fetchpriority="high">
+<link rel="modulepreload" href="js/app.mjs">
+<link rel="modulepreload" href="js/ciphers.mjs">
+<link rel="modulepreload" href="js/data/index.mjs">
+<link rel="modulepreload" href="js/data/corpus.mjs">
+<link rel="stylesheet" href="css/uriel.css">
+<link rel="preload" href="assets/fonts/EBGaramond-400i-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/JetBrainsMono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/fonts.css">
+
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+ {"@type":"WebApplication","@id":"https://shep95.github.io/gem.asherin/#app","name":"Uriel","alternateName":"Uriel Gematria Engine","url":"https://shep95.github.io/gem.asherin/","description":"Gematria, isopsephy and numerology calculator with Hebrew, Greek and English ciphers, a 750-word corpus, etymology, scripture and tradition readings. Private and offline-capable.","applicationCategory":"EducationalApplication","operatingSystem":"Any","browserRequirements":"Requires JavaScript","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"featureList":["22 built-in ciphers","Hebrew mispar hechrachi and mispar gadol","Greek isopsephy","English ordinal, reduced, Chaldean, Agrippa, Bacon, prime, Fibonacci","Corpus of 750 words with matching values","Etymology and tradition readings","Scripture, tree of life and tarot correspondences","Custom cipher builder","Works offline as a progressive web app"],"image":"https://shep95.github.io/gem.asherin/assets/og.png","softwareVersion":"2.0.0","isAccessibleForFree":true,"inLanguage":"en"},
+ {"@type":"FAQPage","@id":"https://shep95.github.io/gem.asherin/#faq","mainEntity":[
+  {"@type":"Question","name":"What is gematria?","acceptedAnswer":{"@type":"Answer","text":"Gematria assigns a numerical value to each letter of an alphabet and sums them for a word or phrase. Words with equal values are traditionally read as related. It originates in Hebrew rabbinic interpretation and Greek isopsephy, and has English variants such as ordinal (a=1 … z=26) and Pythagorean reduction."}},
+  {"@type":"Question","name":"Which ciphers does Uriel include?","acceptedAnswer":{"@type":"Answer","text":"Ordinal, Pythagorean reduced, Chaldean, standard English (×6), Hebrew mispar hechrachi and mispar gadol, Greek isopsephy, Agrippa, English-to-Hebrew transliteration, reverse ordinal, Francis Bacon, Crowley English Qabalah, Satanic, Arabic abjad, mispar katan, master numbers, septenary, Fibonacci, prime, ASCII, Sumerian and trigramic — plus your own custom ciphers."}},
+  {"@type":"Question","name":"Is my data private?","acceptedAnswer":{"@type":"Answer","text":"Yes. All calculation happens in your browser. Nothing is sent to a server unless you explicitly enable optional live data sources or add your own AI API key, which is stored encrypted on your device only."}},
+  {"@type":"Question","name":"Does it work offline?","acceptedAnswer":{"@type":"Answer","text":"Yes. Uriel is a progressive web app: after the first visit the whole engine, corpus and readings are cached and it can be installed and used without a connection."}}
+ ]}
+]}
+</script>
+</head>
+<body>
+<a class="skip-link" href="#main-area">skip to results</a>
+<div class="bg-l" aria-hidden="true"></div>
+<div class="bg-hi" id="bg-layer" aria-hidden="true"></div>
+<div class="bg-ov" aria-hidden="true"></div>
+
+<div class="host-warning" role="alert">this copy of uriel is not being served from an official domain. network features are disabled. the source is at <a href="https://github.com/shep95/gem.asherin" rel="noopener">github.com/shep95/gem.asherin</a>.</div>
+
+<div class="shell">
+  <header class="topbar">
+    <h1 class="logo"><a href="./" data-action="home">Uriel</a></h1>
+    <span class="logo-sub">gematria engine</span>
+    <div class="topbar-right">
+      <span class="net-status" id="net-status" hidden>offline</span>
+      <div class="mode-pills" role="group" aria-label="mode preset">
+        <button class="mode-pill on" type="button" data-action="mode" data-m="biblical" aria-pressed="true">biblical</button>
+        <button class="mode-pill" type="button" data-action="mode" data-m="occult" aria-pressed="false">hermetic</button>
+        <button class="mode-pill" type="button" data-action="mode" data-m="scholar" aria-pressed="false">scholar</button>
+      </div>
+      <button class="icon-btn" type="button" id="install-btn" hidden data-action="install" title="install app" aria-label="install app">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+      </button>
+      <button class="icon-btn" type="button" data-action="share" title="copy link to this word" aria-label="copy link to this word">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      </button>
+      <button class="icon-btn" type="button" data-action="open-settings" title="settings" aria-label="settings" aria-haspopup="dialog">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="body-grid" id="body-grid">
+    <aside id="sidebar" aria-label="controls">
+      <div class="sb-block">
+        <label class="sb-lbl" for="main-input">analyze</label>
+        <div class="srch-wrap">
+          <div class="srch-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+          <input class="srch-in" id="main-input" type="text" placeholder="word or phrase…" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" aria-label="enter a word or phrase to analyze" maxlength="200">
+        </div>
+      </div>
+      <div class="sb-block">
+        <span class="sb-lbl" id="trad-lbl">tradition</span>
+        <div class="trad-grid" role="group" aria-labelledby="trad-lbl">
+          <button class="trad-btn on" type="button" data-action="trad" data-t="hebrew" aria-pressed="true">hebrew<small>torah · talmud</small></button>
+          <button class="trad-btn on" type="button" data-action="trad" data-t="greek" aria-pressed="true">greek<small>isopsephy</small></button>
+          <button class="trad-btn on" type="button" data-action="trad" data-t="biblical" aria-pressed="true">biblical<small>scripture</small></button>
+          <button class="trad-btn" type="button" data-action="trad" data-t="occult" aria-pressed="false">hermetic<small>occult</small></button>
+        </div>
+      </div>
+      <div class="sb-block">
+        <span class="sb-lbl" id="cipher-lbl">ciphers</span>
+        <div id="cipher-list" role="group" aria-labelledby="cipher-lbl"></div>
+      </div>
+      <div class="sb-block">
+        <label class="sb-lbl" for="compare-input">compare</label>
+        <div class="row">
+          <input class="srch-in sm flex" id="compare-input" type="text" placeholder="word or phrase…" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" maxlength="200" aria-label="word to compare">
+          <button class="go-btn auto" type="button" data-action="add-compare" aria-label="add to comparison">+</button>
+        </div>
+        <div id="compare-chips" class="row wrap mt8" aria-live="polite"></div>
+        <button class="go-btn" type="button" data-action="open-split">open split view</button>
+      </div>
+      <span class="sb-lbl pad">recent</span>
+      <div class="hist-list" id="hist-list"><div class="hist-empty" id="hist-empty">no searches yet</div></div>
+      <span class="sb-lbl pad">try</span>
+      <div class="hist-list" id="sug-list"></div>
+    </aside>
+
+    <div class="resize-handle" id="resize-handle" role="separator" aria-orientation="vertical" aria-label="resize sidebar" title="drag to resize sidebar"></div>
+
+    <main id="main-area" aria-label="results" tabindex="-1">
+      <div id="m-empty">
+        <div class="m-empty">
+          <div class="m-empty-g" aria-hidden="true">✦</div>
+          <p class="m-empty-t">enter a word or phrase</p>
+          <p class="drop-hint">or drop an image to change the background</p>
+        </div>
+        <section class="about" aria-labelledby="about-h">
+          <h2 id="about-h">what is gematria?</h2>
+          <p>Gematria gives every letter a number and sums a word. Two words that share a value are read, in the Hebrew, Greek and later Western traditions, as carrying a hidden relation. Uriel computes that sum across many cipher systems at once, then shows what else in scripture, kabbalah, classical philosophy and the hermetic corpus shares the number.</p>
+          <div class="try" id="try-words" aria-label="example words"></div>
+          <h2>ciphers</h2>
+          <ul id="about-ciphers">
+            <li><b>ordinal</b> a=1 … z=26</li><li><b>pythagorean</b> reduced to one digit</li><li><b>chaldean</b> babylonian 1–8</li><li><b>standard english</b> ordinal × 6</li>
+            <li><b>hebrew</b> mispar hechrachi, א=1 … ת=400</li><li><b>hebrew gadol</b> finals 500–900</li><li><b>greek isopsephy</b> α=1 … ω=800</li><li><b>agrippa</b> renaissance occult values</li>
+            <li><b>english → hebrew</b> transliterated values</li><li><b>reverse ordinal</b> z=1 … a=26</li><li><b>francis bacon</b> case-sensitive 1–52</li><li><b>crowley eq</b> a=0, b=6, c=12 …</li>
+            <li><b>satanic</b> a=37 … z=62</li><li><b>arabic abjad</b> traditional letter values</li><li><b>mispar katan</b> each letter mod 9</li><li><b>master numbers</b> 11, 22, 33 kept</li>
+            <li><b>septenary</b> celtic cycles of 7</li><li><b>fibonacci</b> letters on the sequence</li><li><b>prime</b> a=2 … z=101</li><li><b>ascii</b> raw character codes</li>
+            <li><b>sumerian</b> ordinal × 6000</li><li><b>trigramic</b> position-weighted</li><li><b>custom</b> define your own mapping</li>
+          </ul>
+          <h2>what you get</h2>
+          <p>Cipher convergence and chance probability, exact and reduced matches against a corpus of <span id="about-corpus">750</span> words across biblical, hebrew, greek, hermetic, islamic, eastern, cosmic and cultural domains, Hebrew letter and sefirot correspondences, scripture references, tarot arcana, number properties (prime, triangular, square, Fibonacci), phrase breakdowns, atbash mirrors, etymologies and per-tradition readings. Optional live dictionary, encyclopedia and scripture lookups, and optional AI readings with your own key.</p>
+          <h2>private by design</h2>
+          <p>Everything runs in your browser. Saved sessions are AES-GCM encrypted on your device. No accounts, no analytics, no cookies. After the first load the app works fully offline and can be installed to your home screen.</p>
+          <details><summary>keyboard shortcuts</summary><p><b>/</b> focus search · <b>enter</b> analyze · <b>esc</b> close settings · <b>ctrl/⌘ + s</b> save session</p></details>
+        </section>
+      </div>
+      <div id="result" hidden aria-live="polite"></div>
+
+      <div id="split-view" hidden>
+        <div class="split-bar-row">
+          <span class="split-lbl">compare</span>
+          <div id="split-panels"></div>
+          <button class="split-close" type="button" data-action="close-split" title="close compare" aria-label="close compare">✕</button>
+        </div>
+        <div id="split-compat" hidden></div>
+      </div>
+    </main>
+  </div>
+
+  <nav class="mob-nav" aria-label="mobile panels">
+    <button class="mob-tab" type="button" data-action="panel" data-p="sidebar">controls</button>
+    <button class="mob-tab on" type="button" data-action="panel" data-p="main">results</button>
+  </nav>
+</div>
+
+<div class="music-player hidden" id="music-player" aria-label="ambient music">
+  <div class="music-equalizer" aria-hidden="true"><div class="eq-bar paused"></div><div class="eq-bar paused"></div><div class="eq-bar paused"></div></div>
+  <button class="music-btn" type="button" id="music-play-btn" data-action="music-toggle" title="play / pause" aria-label="play or pause music">▶</button>
+  <button class="music-btn sm" type="button" data-action="music-next" title="next station" aria-label="next station">⏭</button>
+  <span class="music-label" id="music-label-el">lofi radio</span>
+  <input type="range" class="music-vol" id="music-vol" min="0" max="1" step="0.01" value="0.35" title="volume" aria-label="volume">
+</div>
+
+<div class="overlay" id="settings-overlay" role="dialog" aria-modal="true" aria-labelledby="settings-title" hidden>
+  <div class="sp">
+    <div class="sp-head"><h2 class="sp-title" id="settings-title">settings</h2><button class="sp-close" type="button" data-action="close-settings" aria-label="close settings">✕</button></div>
+
+    <div class="sp-sec">
+      <div class="sp-sec-t">live readings (optional)</div>
+      <p class="sp-help">add your own anthropic api key to stream ai etymologies and tradition readings for words not in the built-in library. the key is aes-gcm encrypted on this device, sent only to api.anthropic.com, and never logged.</p>
+      <div class="row">
+        <input class="srch-in sm flex" id="api-key" type="password" placeholder="sk-ant-…" autocomplete="off" spellcheck="false" aria-label="anthropic api key" maxlength="200">
+        <button class="go-btn auto" type="button" data-action="save-key">save</button>
+        <button class="go-btn auto danger" type="button" data-action="clear-key">clear</button>
+      </div>
+      <div class="key-status" id="key-status">no key stored — offline readings only</div>
+      <div class="sp-row mt8"><div><div class="sp-lbl">live data sources</div><div class="sp-sub">dictionary · wikipedia · scripture text (no key needed)</div></div><button class="sp-tog on" type="button" id="sl-sources" data-action="toggle-sources" aria-pressed="true" aria-label="live data sources"></button></div>
+    </div>
+
+    <div class="sp-sec">
+      <div class="sp-sec-t">session data</div>
+      <p class="sp-help">encrypted on your device only. never transmitted. saves your mode, layers, active and custom ciphers, and recent searches.</p>
+      <div class="row wrap">
+        <button class="go-btn grow" type="button" id="save-btn" data-action="save-session">save session</button>
+        <button class="go-btn grow" type="button" id="load-btn" data-action="load-session">load session</button>
+        <button class="go-btn grow danger" type="button" id="clear-btn" data-action="clear-session">clear data</button>
+      </div>
+      <p class="sp-help tiny">aes-gcm encrypted · device-local only · no cloud · no tracking</p>
+    </div>
+
+    <div class="sp-sec">
+      <div class="sp-sec-t">ambient music</div>
+      <div class="sp-row"><div><div class="sp-lbl">432hz lofi ambient</div><div class="sp-sub">public radio streams · 4hz binaural synth when offline</div></div><button class="sp-tog" type="button" id="sl-music" data-action="toggle-music-setting" aria-pressed="false" aria-label="ambient music"></button></div>
+    </div>
+
+    <div class="sp-sec">
+      <div class="sp-sec-t">background image</div>
+      <button class="bg-upload-zone" type="button" data-action="bg-upload">
+        <div class="bg-upload-label">upload image</div>
+        <div class="bg-upload-sub">colors and font auto-adapt to image palette · never uploaded anywhere</div>
+      </button>
+      <input type="file" id="bg-upload" accept="image/png,image/jpeg,image/webp,image/gif,image/avif" hidden>
+      <button class="go-btn mt8" type="button" data-action="bg-reset">reset to default</button>
+    </div>
+
+    <div class="sp-sec">
+      <div class="sp-sec-t">mode presets</div>
+      <div class="sp-row"><div><div class="sp-lbl">biblical</div><div class="sp-sub">hebrew, scripture, no occult ciphers</div></div><button class="sp-tog on" type="button" data-action="mode" data-m="biblical" data-modetog="biblical" aria-label="biblical mode"></button></div>
+      <div class="sp-row"><div><div class="sp-lbl">hermetic / occult</div><div class="sp-sub">full cipher set, sefirot, tarot, no scripture</div></div><button class="sp-tog" type="button" data-action="mode" data-m="occult" data-modetog="occult" aria-label="hermetic mode"></button></div>
+      <div class="sp-row"><div><div class="sp-lbl">scholar</div><div class="sp-sub">all traditions and all layers visible</div></div><button class="sp-tog" type="button" data-action="mode" data-m="scholar" data-modetog="scholar" aria-label="scholar mode"></button></div>
+    </div>
+
+    <div class="sp-sec">
+      <div class="sp-sec-t">religious traditions</div>
+      <p class="sp-help">controls which corpus domains appear in matches.</p>
+      <div class="grid2" id="religion-grid">
+        <button class="trad-btn on" type="button" data-action="religion" data-rel="christianity" aria-pressed="true">Christianity<small>Bible</small></button>
+        <button class="trad-btn on" type="button" data-action="religion" data-rel="judaism" aria-pressed="true">Judaism<small>Torah · Talmud</small></button>
+        <button class="trad-btn" type="button" data-action="religion" data-rel="islam" aria-pressed="false">Islam<small>Quran</small></button>
+        <button class="trad-btn" type="button" data-action="religion" data-rel="hinduism" aria-pressed="false">Hinduism<small>Vedas</small></button>
+        <button class="trad-btn" type="button" data-action="religion" data-rel="buddhism" aria-pressed="false">Buddhism<small>Tipitaka</small></button>
+        <button class="trad-btn" type="button" data-action="religion" data-rel="taoism" aria-pressed="false">Taoism<small>Tao Te Ching</small></button>
+        <button class="trad-btn" type="button" data-action="religion" data-rel="zoroastrianism" aria-pressed="false">Zoroastrianism<small>Avesta</small></button>
+        <button class="trad-btn" type="button" data-action="religion" data-rel="sikhism" aria-pressed="false">Sikhism<small>Guru Granth</small></button>
+      </div>
+    </div>
+
+    <div class="sp-sec">
+      <div class="sp-sec-t">tradition visibility</div>
+      <div class="sp-row"><div><div class="sp-lbl">hebrew</div><div class="sp-sub">torah, talmud, kabbalah</div></div><button class="sp-tog on" type="button" id="st-hebrew" data-action="setting-trad" data-t="hebrew" aria-label="hebrew tradition"></button></div>
+      <div class="sp-row"><div><div class="sp-lbl">biblical / christian</div><div class="sp-sub">scripture refs, NT numerology</div></div><button class="sp-tog on" type="button" id="st-biblical" data-action="setting-trad" data-t="biblical" aria-label="biblical tradition"></button></div>
+      <div class="sp-row"><div><div class="sp-lbl">greek classical</div><div class="sp-sub">isopsephy, pythagorean, platonic</div></div><button class="sp-tog on" type="button" id="st-greek" data-action="setting-trad" data-t="greek" aria-label="greek tradition"></button></div>
+      <div class="sp-row"><div><div class="sp-lbl">western hermetic</div><div class="sp-sub">crowley, golden dawn, freemasonry</div></div><button class="sp-tog" type="button" id="st-occult" data-action="setting-trad" data-t="occult" aria-label="hermetic tradition"></button></div>
+    </div>
+
+    <div class="sp-sec">
+      <div class="sp-sec-t">analysis layers</div>
+      <div class="sp-row"><div><div class="sp-lbl">hebrew letters</div><div class="sp-sub">22-letter correspondences</div></div><button class="sp-tog on" type="button" id="sl-letters" data-action="layer" data-l="letters" aria-label="hebrew letters layer"></button></div>
+      <div class="sp-row"><div><div class="sp-lbl">scripture refs</div><div class="sp-sub">biblical verse connections</div></div><button class="sp-tog on" type="button" id="sl-scripture" data-action="layer" data-l="scripture" aria-label="scripture layer"></button></div>
+      <div class="sp-row"><div><div class="sp-lbl">tree of life</div><div class="sp-sub">sephiroth correspondence</div></div><button class="sp-tog" type="button" id="sl-sefirot" data-action="layer" data-l="sefirot" aria-label="tree of life layer"></button></div>
+      <div class="sp-row"><div><div class="sp-lbl">tarot</div><div class="sp-sub">major arcana by reduced value</div></div><button class="sp-tog" type="button" id="sl-tarot" data-action="layer" data-l="tarot" aria-label="tarot layer"></button></div>
+      <div class="sp-row"><div><div class="sp-lbl">etymology</div><div class="sp-sub">root word decomposition</div></div><button class="sp-tog on" type="button" id="sl-etym" data-action="layer" data-l="etym" aria-label="etymology layer"></button></div>
+      <div class="sp-row"><div><div class="sp-lbl">tradition readings</div><div class="sp-sub">per-tradition interpretation</div></div><button class="sp-tog on" type="button" id="sl-trad" data-action="layer" data-l="trad" aria-label="tradition readings layer"></button></div>
+      <div class="sp-row"><div><div class="sp-lbl">sources</div><div class="sp-sub">dictionary, encyclopedia, scripture text</div></div><button class="sp-tog on" type="button" id="sl-sourcesLayer" data-action="layer" data-l="sources" aria-label="sources layer"></button></div>
+      <div class="sp-row"><div><div class="sp-lbl">root archaeology</div><div class="sp-sub">full layer-by-layer analysis</div></div><button class="sp-tog on" type="button" id="sl-root" data-action="layer" data-l="root" aria-label="root archaeology layer"></button></div>
+      <div class="sp-row"><div><div class="sp-lbl">phrase breakdown</div><div class="sp-sub">per-word values in phrases</div></div><button class="sp-tog on" type="button" id="sl-phrase" data-action="layer" data-l="phrase" aria-label="phrase breakdown layer"></button></div>
+      <div class="sp-row"><div><div class="sp-lbl">convergence score</div><div class="sp-sub">statistical significance</div></div><button class="sp-tog on" type="button" id="sl-conv" data-action="layer" data-l="conv" aria-label="convergence layer"></button></div>
+    </div>
+
+    <div class="sp-sec">
+      <div class="sp-sec-t">custom cipher builder</div>
+      <p class="sp-help">define your own letter-to-number mapping as a JSON object. errors show inline.</p>
+      <input class="srch-in sm mb6" id="custom-name" type="text" placeholder="cipher name…" maxlength="50" aria-label="cipher name">
+      <textarea class="code-input" id="custom-code" placeholder='{ "a": 1, "b": 2, "c": 3, ... }' aria-label="cipher mapping as json" spellcheck="false"></textarea>
+      <div id="custom-errors" aria-live="polite"></div>
+      <div id="custom-preview"></div>
+      <button class="go-btn mt8" type="button" data-action="install-cipher">install cipher</button>
+    </div>
+
+    <div class="sp-sec">
+      <div class="sp-sec-t">about</div>
+      <p class="sp-help">uriel <span id="about-version">2.0</span> · <span id="about-ciphers-n">22</span> ciphers · <span id="about-corpus-n">750</span> corpus entries · <a href="https://github.com/shep95/gem.asherin" rel="noopener">source</a> · <a href="https://github.com/shep95/gem.asherin/blob/main/SECURITY.md" rel="noopener">security policy</a></p>
+      <button class="go-btn danger" type="button" data-action="wipe-all">wipe everything stored on this device</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<noscript>
+  <div class="noscript-warning">Uriel needs JavaScript to calculate gematria. The engine, corpus and readings all run locally in your browser; nothing is sent to a server.</div>
+</noscript>
+
+<script src="js/guard.js"></script>
+<script type="module" src="js/app.mjs"></script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+{
+  "generated": "2026-09-27",
+  "algorithm": "sha256",
+  "files": {
+    "index.html": "2294ee564b42a718a374488cb9e2331f1a786acd07c37d7c977d4581f11f131e",
+    "offline.html": "8b708ac3a16154b5d129dfd4d8721f3c7c980205ddced6908b9b7adb75c78f44",
+    "sw.js": "07d3dcb22924d37147892185992ee03006da3018dcd5b17ed1bbf14f04bb891d",
+    "manifest.webmanifest": "b7ab36397f03c692aa50a0abce38b6376a69ce6b47f241e05706013e6edf6b46",
+    "css/uriel.css": "73764821c687422ac20cb0a4e17f18beff170029822ecef2c75d5fa0390bdb2b",
+    "css/fonts.css": "cee31d8e2fd34d8389ce369757390447ae395340fe5da60b2b3a93ee5562a6dc",
+    "js/guard.js": "609f2fa3ae651c8842bc1b2245d42d53d80cf3d2a7fc91e5bc451548a0d662ef",
+    "js/app.mjs": "66eae89d9819ba0159d28d1d502ea1e4ad2e28671f035ff022271bf795549dc2",
+    "js/config.mjs": "e4331593249cb55981541cb9c8ddcc2d7827f1aa9f8bba4b15c7e9a8dae4eb94",
+    "js/ciphers.mjs": "fbe0a4f8ff06aea0ff29ab44b673834d4453ac4d50266402216bab0a64f531d9",
+    "js/sanitize.mjs": "02f396a6912e04e5e3a69cbd0d60e7fbfc9144e26e8a07005c348f6b72a3f43a",
+    "js/storage.mjs": "3c2f58576964681fd5b465f4b9abcc4a4126ff2cfa277a6c6a3449ce0af293bd",
+    "js/ai.mjs": "dc16a5f5d4a42377ff805b49a2a10c8bd84badbe716d09ec915dea001e60eee8",
+    "js/sources.mjs": "8192270a66ef63481f01c8edcff420a0ad016b864ce92dc95e213b25f12ee2f7",
+    "js/theme.mjs": "37e11290551a1108f4200b4a43c0c46d26afe381c9b7fb57e56abf0f91a2821a",
+    "js/music.mjs": "98ebf3fc3ce01784f779fa8a9b7992024523fb6fbb780910ad1cf8e9a4ecdf5e",
+    "js/data/index.mjs": "80830fc8d1450a3a3f5352ef01c6edcd62371e99790fb9098a5987bcb4f187f9",
+    "js/data/corpus.mjs": "d4ae5b452f1c533859b9e2d308077fc7f3794cf89f0bf01a645da7711aca48c9",
+    "js/data/corpus-base.mjs": "b265a530b347416595baa1baeb452b7e86ed0d41fcc508d5bafb0c8c621dbb5a",
+    "js/data/corpus-extra.mjs": "438763b415dec0ac834c2a143ff457df1d1c9bb6fb6398155e849accf3e68b53",
+    "js/data/knowledge.mjs": "cfa936b9bada60a62880961d795b4d58139920c29a708df035ea0d5b65eb82d7",
+    "js/data/readings.mjs": "b68318e755c1fc856b70b7d0b1d4d74fd003e95c0f8cbedbc5d7cdd3e8e721d9",
+    "js/data/meanings.mjs": "f51b1df24273a3c69431dd0d16fe4b9f4ad64169f5243aa8c981ed6a2a97abcd",
+    "js/data/cipher-notes.mjs": "242d8c6e9580968c42cb46c58364ef4c64c3b5d2200d4a8b275f433ad446e76d"
+  }
+}
