@@ -56,6 +56,8 @@ export async function lookupWikipedia(term) {
     extract: clean(data.extract),
     url: data.content_urls?.desktop?.page || 'https://en.wikipedia.org/wiki/' + encodeURIComponent(title),
     thumbnail: data.thumbnail?.source && /^https:\/\/upload\.wikimedia\.org\//.test(data.thumbnail.source) ? data.thumbnail.source : '',
+    // geographic coordinates when the article has them (used by the structure layer, never invented)
+    coordinates: data.coordinates && Number.isFinite(data.coordinates.lat) && Number.isFinite(data.coordinates.lon) && Math.abs(data.coordinates.lat) <= 90 && Math.abs(data.coordinates.lon) <= 180 ? { lat: +data.coordinates.lat.toFixed(4), lon: +data.coordinates.lon.toFixed(4) } : null,
     source: 'wikipedia',
   };
 }

@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const FILES = [
   'index.html', 'offline.html', 'sw.js', 'manifest.webmanifest', 'css/uriel.css', 'css/fonts.css',
-  'js/guard.js', 'js/app.mjs', 'js/config.mjs', 'js/ciphers.mjs', 'js/sanitize.mjs', 'js/storage.mjs', 'js/ai.mjs', 'js/sources.mjs', 'js/theme.mjs', 'js/music.mjs',
+  'js/guard.js', 'js/app.mjs', 'js/config.mjs', 'js/ciphers.mjs', 'js/sanitize.mjs', 'js/storage.mjs', 'js/ai.mjs', 'js/sources.mjs', 'js/theme.mjs', 'js/music.mjs', 'js/structure.mjs', 'js/structure-ui.mjs',
   'js/data/index.mjs', 'js/data/corpus.mjs', 'js/data/corpus-base.mjs', 'js/data/corpus-extra.mjs', 'js/data/knowledge.mjs', 'js/data/readings.mjs', 'js/data/meanings.mjs', 'js/data/cipher-notes.mjs',
 ];
 export function computeIntegrity() {

@@ -1,6 +1,6 @@
 /* Uriel service worker — offline-first app shell, runtime caching for fonts
  * and keyless data APIs. Bump VERSION whenever a precached file changes. */
-const VERSION = 'uriel-v2.0.0';
+const VERSION = 'uriel-v2.1.0';
 const SHELL = `${VERSION}-shell`;
 const RUNTIME = `${VERSION}-runtime`;
 const DATA = `${VERSION}-data`;
@@ -20,6 +20,9 @@ const PRECACHE = [
   './js/sources.mjs',
   './js/theme.mjs',
   './js/music.mjs',
+  './js/sanitize.mjs',
+  './js/structure.mjs',
+  './js/structure-ui.mjs',
   './js/data/index.mjs',
   './js/data/corpus.mjs',
   './js/data/corpus-base.mjs',

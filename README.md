@@ -26,6 +26,16 @@ first visit it works fully offline and can be installed as an app.
   with no key needed, cached on-device for offline reuse.
 - **Optional AI readings** using your own Anthropic API key, stored encrypted
   on your device and sent nowhere else.
+- **Mathematical structure layer** — takes the calculator's own values as
+  mathematical objects: factorisation, polygonal and Fibonacci membership, sums
+  and differences of squares and cubes, rectangles, right triangles, circles and
+  angles; an entity workbench (people, organisations, events, locations, dates)
+  tests sums, differences, products, ratios, Pythagorean triples and sequences
+  between values, day intervals between dates and great-circle distances between
+  coordinates (user-supplied or fetched from Wikipedia, never invented), with a
+  cross-entity relationship map, reverse structural search, multi-scale check
+  and an honest convergence verdict: every hit is shown next to the number of
+  candidates tested, a chance baseline and nearby-value match density.
 - **Compare** up to six words side by side with a compatibility score;
   **trajectory** arcs; atbash and albam mirrors; phrase breakdowns.
 - **Shareable links** (`?q=word`), keyboard shortcuts, adaptive theme from a
@@ -58,6 +68,8 @@ css/                  stylesheet + self-hosted fonts
 js/app.mjs            UI and rendering
 js/ciphers.mjs        pure cipher engine (unit-tested)
 js/sanitize.mjs       allowlist sanitizer + Trusted Types policy
+js/structure.mjs      mathematical structure engine (pure, unit-tested)
+js/structure-ui.mjs   structure tab + entity workbench
 js/guard.js           console / frame / injection / host guard
 js/storage.mjs        AES-GCM device storage + response cache
 js/ai.mjs             optional Anthropic streaming client

@@ -2,7 +2,7 @@
 // Edit these when you deploy to your own domain. Everything is frozen at load.
 export const CONFIG = Object.freeze({
   name: 'Uriel',
-  version: '2.0.0',
+  version: '2.1.0',
   // Canonical origin of the deployed site (used for share links and the sitemap).
   siteUrl: 'https://shep95.github.io/gem.asherin/',
   // Domain defence: hosts this build is allowed to run on. When the page is

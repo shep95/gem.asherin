@@ -6,8 +6,8 @@
 // (require-trusted-types-for 'script') makes this the ONLY way to reach a
 // string-to-HTML sink, so an escaping bug elsewhere cannot become XSS.
 
-const TAGS = new Set(['div', 'span', 'p', 'b', 'i', 'em', 'strong', 'small', 'br', 'ol', 'ul', 'li', 'button', 'a', 'img', 'input', 'h2', 'h3', 'label', 'details', 'summary', 'code']);
-const ATTRS = new Set(['class', 'id', 'title', 'role', 'tabindex', 'hidden', 'type', 'placeholder', 'maxlength', 'autocomplete', 'autocapitalize', 'spellcheck', 'enterkeyhint', 'value', 'alt', 'loading', 'decoding', 'width', 'height', 'rel', 'target', 'lang', 'dir', 'for', 'open', 'referrerpolicy']);
+const TAGS = new Set(['div', 'span', 'p', 'b', 'i', 'em', 'strong', 'small', 'br', 'ol', 'ul', 'li', 'button', 'a', 'img', 'input', 'h2', 'h3', 'label', 'details', 'summary', 'code', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'select', 'option']);
+const ATTRS = new Set(['class', 'id', 'title', 'role', 'tabindex', 'hidden', 'type', 'placeholder', 'maxlength', 'autocomplete', 'autocapitalize', 'spellcheck', 'enterkeyhint', 'value', 'alt', 'loading', 'decoding', 'width', 'height', 'rel', 'target', 'lang', 'dir', 'for', 'open', 'referrerpolicy', 'selected', 'colspan', 'inputmode', 'name', 'scope']);
 const URL_ATTRS = { href: /^(https:\/\/[^\s]+|\.\/[^\s]*|\?[^\s]*|#[\w\-]*)$/i, src: /^https:\/\/upload\.wikimedia\.org\/[^\s]+$/i };
 
 function clean(node) {
@@ -22,7 +22,7 @@ function clean(node) {
       if (!ATTRS.has(n)) k.removeAttribute(a.name);
     }
     if (k.localName === 'a') { k.setAttribute('rel', 'noopener noreferrer'); if (k.getAttribute('target') && k.getAttribute('target') !== '_blank') k.removeAttribute('target'); }
-    if (k.localName === 'input' && !/^(text|search|password)$/.test(k.getAttribute('type') || 'text')) k.setAttribute('type', 'text');
+    if (k.localName === 'input' && !/^(text|search|password|number)$/.test(k.getAttribute('type') || 'text')) k.setAttribute('type', 'text');
     clean(k);
   }
 }

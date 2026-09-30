@@ -13,6 +13,8 @@ import { lookupDictionary, lookupWikipedia, lookupVerse, extractReference } from
 import { setBackgroundFile, resetPalette } from './theme.mjs';
 import * as Music from './music.mjs';
 import { setHTML, esc, escEm, swURL } from './sanitize.mjs';
+import { renderStructure, ENTITY_KINDS } from './structure-ui.mjs';
+import { parseDate, validCoord } from './structure.mjs';
 
 const $ = (id) => document.getElementById(id);
 const UNTRUSTED = document.documentElement.hasAttribute('data-untrusted-host');
@@ -23,7 +25,9 @@ const isMobile = () => window.innerWidth <= 680;
 const STATE = {
   mode: 'biblical',
   traditions: { hebrew: true, biblical: true, greek: true, occult: false },
-  layers: { etym: true, trad: true, root: true, phrase: true, conv: true, letters: true, sefirot: false, tarot: false, scripture: true, sources: true },
+  layers: { etym: true, trad: true, root: true, phrase: true, conv: true, letters: true, sefirot: false, tarot: false, scripture: true, sources: true, structure: true },
+  entities: [], // structure-layer workbench: { id, label, kind, text, date, lat, lon, coordSource }
+  structCipher: '', // '' = the primary cipher of the current word
   religions: { christianity: true, judaism: true, islam: false, hinduism: false, buddhism: false, taoism: false, zoroastrianism: false, sikhism: false },
   activeCiphers: new Set(['ordinal', 'reduced', 'chaldean', 'agrippa', 'hebrew', 'greek']),
   customCiphers: {},
@@ -196,6 +200,7 @@ function buildSaveData() {
     activeCiphers: [...STATE.activeCiphers],
     customCiphers: Object.fromEntries(Object.entries(STATE.customCiphers).map(([k, c]) => [k, { name: c.name, map: c.map }])),
     history: STATE.history.slice(0, CONFIG.limits.maxHistory), musicAutostart: STATE.musicAutostart, sources: STATE.sources, sidebarW: STATE.sidebarW, savedAt: Date.now(),
+    entities: STATE.entities.slice(0, 24), structCipher: STATE.structCipher,
   };
 }
 const isPlainObj = (o) => o && typeof o === 'object' && !Array.isArray(o);
@@ -224,6 +229,8 @@ async function loadSession({ quiet } = {}) {
   if (Array.isArray(d.history)) STATE.history = d.history.filter((h) => isPlainObj(h) && typeof h.word === 'string' && Number.isFinite(h.val)).map((h) => ({ word: safeWord(h.word), val: Math.round(h.val) })).filter((h) => h.word).slice(0, CONFIG.limits.maxHistory);
   if (typeof d.musicAutostart === 'boolean') STATE.musicAutostart = d.musicAutostart;
   if (typeof d.sources === 'boolean') STATE.sources = d.sources;
+  if (Array.isArray(d.entities)) STATE.entities = d.entities.map(sanitizeEntity).filter(Boolean).slice(0, 24);
+  if (typeof d.structCipher === 'string' && (d.structCipher === '' || d.structCipher in all)) STATE.structCipher = d.structCipher;
   if (Number.isFinite(d.sidebarW) && d.sidebarW >= 180 && d.sidebarW <= 420) setSidebarWidth(d.sidebarW);
   syncSettingsUI(); rebuildCipherList(); renderHistory();
   if (STATE.musicAutostart) $('music-player')?.classList.remove('hidden');
@@ -513,7 +520,7 @@ function renderResult(raw, all) {
     { id: 'numbers', label: 'numbers', show: true }, { id: 'matches', label: 'matches', show: true },
     { id: 'breakdown', label: 'phrase', show: isPhrase && STATE.layers.phrase }, { id: 'etymology', label: 'etymology', show: STATE.layers.etym },
     { id: 'tradition', label: 'tradition', show: STATE.layers.trad && activeTL.length > 0 }, { id: 'sources', label: 'sources', show: STATE.layers.sources },
-    { id: 'root', label: 'root', show: STATE.layers.root }, { id: 'predict', label: 'oracle', show: true },
+    { id: 'root', label: 'root', show: STATE.layers.root }, { id: 'structure', label: 'structure', show: STATE.layers.structure }, { id: 'predict', label: 'oracle', show: true },
   ].filter((t) => t.show);
   if (!tabs.find((t) => t.id === STATE.activeTab)) STATE.activeTab = tabs[0].id;
   const tabHTML = tabs.map((t) => `<button class="tab${STATE.activeTab === t.id ? ' on' : ''}" type="button" role="tab" aria-selected="${STATE.activeTab === t.id}" aria-controls="p-${t.id}" data-action="tab" data-tab="${t.id}">${t.label}</button>`).join('');
@@ -534,6 +541,7 @@ function renderResult(raw, all) {
     + (STATE.layers.trad && activeTL.length ? panel('tradition', tradHTML) : '')
     + (STATE.layers.sources ? panel('sources', sourcesHTML) : '')
     + (STATE.layers.root ? panel('root', rootHTML) : '')
+    + (STATE.layers.structure ? panel('structure', structureHTML(raw, all, activeKeys, primaryKey)) : '')
     + panel('predict', oracleHTML) + '</div>';
 
   $('m-empty').hidden = true;
@@ -712,6 +720,77 @@ function installCustomCipher() {
   toast(`installed “${name}”`, { label: 'save session', onClick: saveSession });
 }
 
+// ── mathematical structure layer ──────────────────────────────────────────────
+// Sits on top of the existing calculation: every value it analyses is the
+// unchanged output of calcWord under the selected cipher.
+function structureHTML(raw, all, activeKeys, primaryKey) {
+  try {
+    return renderStructure({
+      raw, all, activeKeys, primaryKey, cipherKey: STATE.structCipher || primaryKey, userEntities: STATE.entities,
+      corpusLookup: (v) => findByOrdinal(v).map((i) => i.w), sources: STATE.sources && !hostBlocksNetwork(), ai: STATE.aiKey && !hostBlocksNetwork(),
+    });
+  } catch (e) {
+    console.warn('[uriel] structure layer failed', e);
+    return '<div class="note note-warn">the structure layer could not analyse this input.</div>';
+  }
+}
+function sanitizeEntity(e) {
+  if (!isPlainObj(e)) return null;
+  const label = safeWord(e.label).slice(0, 80); if (!label) return null;
+  const kind = ENTITY_KINDS.includes(e.kind) ? e.kind : 'other';
+  const text = safeWord(e.text || label) || label;
+  const date = parseDate(e.date) !== null ? String(e.date) : '';
+  const lat = Number(e.lat), lon = Number(e.lon);
+  const hasCoord = validCoord(lat, lon);
+  const id = /^ent_\d{1,16}$/.test(String(e.id)) ? String(e.id) : 'ent_' + Date.now() + Math.floor(Math.random() * 1000);
+  return { id, label, kind, text, date, lat: hasCoord ? +lat.toFixed(4) : undefined, lon: hasCoord ? +lon.toFixed(4) : undefined, coordSource: hasCoord ? (e.coordSource === 'wikipedia' ? 'wikipedia' : 'user') : undefined };
+}
+function addEntityFromForm() {
+  const label = safeWord($('ent-label')?.value);
+  if (!label) { toast('give the entity a label'); $('ent-label')?.focus(); return; }
+  if (STATE.entities.length >= 24) { toast('up to 24 entities'); return; }
+  const dateRaw = ($('ent-date')?.value || '').trim();
+  if (dateRaw && parseDate(dateRaw) === null) { toast('date must be YYYY-MM-DD'); $('ent-date')?.focus(); return; }
+  const latRaw = ($('ent-lat')?.value || '').trim(), lonRaw = ($('ent-lon')?.value || '').trim();
+  if ((latRaw || lonRaw) && !validCoord(Number(latRaw), Number(lonRaw))) { toast('coordinates must be decimal degrees: lat −90…90, lon −180…180'); return; }
+  const e = sanitizeEntity({ id: 'ent_' + Date.now(), label, kind: $('ent-kind')?.value, text: $('ent-text')?.value || label, date: dateRaw, lat: latRaw ? Number(latRaw) : undefined, lon: lonRaw ? Number(lonRaw) : undefined, coordSource: 'user' });
+  if (!e) return;
+  STATE.entities.push(e);
+  STATE.activeTab = 'structure';
+  if (STATE.currentWord) analyze({ silent: true });
+  setTimeout(() => $('ent-label')?.focus(), 0);
+}
+async function fetchEntityCoords(id) {
+  const e = STATE.entities.find((x) => x.id === id); if (!e) return;
+  if (!STATE.sources || hostBlocksNetwork()) { toast('enable live sources in settings first'); return; }
+  toast('looking up coordinates on wikipedia…');
+  const w = await lookupWikipedia(e.text || e.label);
+  if (!w || !w.coordinates) { toast(`wikipedia has no coordinates for “${e.label}”`); return; }
+  e.lat = w.coordinates.lat; e.lon = w.coordinates.lon; e.coordSource = 'wikipedia';
+  STATE.activeTab = 'structure';
+  if (STATE.currentWord) analyze({ silent: true });
+  toast(`coordinates for ${e.label}: ${e.lat}, ${e.lon} (wikipedia)`);
+}
+async function suggestEntities() {
+  if (!STATE.aiKey || hostBlocksNetwork() || !STATE.currentWord) { toast('add an api key in settings to use suggestions'); return; }
+  if (!aiBudgetOk()) { toast('ai request budget reached — try again in a minute'); return; }
+  const holder = document.createElement('div');
+  toast('asking for related entities…');
+  const text = await streamAI(`List up to 8 real, well-documented entities directly connected to "${STATE.currentWord}" (people, organizations, events, locations, dates). Reply ONLY with a JSON array of objects with keys: label (string), kind (one of person, organization, event, location, date, title), date (YYYY-MM-DD or empty string, only if it is a documented date). No prose.`, holder);
+  let arr = null;
+  try { const m = /\[[\s\S]*\]/.exec(text); arr = m ? JSON.parse(m[0]) : null; } catch { arr = null; }
+  if (!Array.isArray(arr) || !arr.length) { toast('no usable suggestions returned'); return; }
+  let added = 0;
+  for (const it of arr.slice(0, 8)) {
+    const e = sanitizeEntity({ id: 'ent_' + Date.now() + added, label: it?.label, kind: it?.kind, text: it?.label, date: it?.date });
+    if (!e || STATE.entities.some((x) => x.label.toLowerCase() === e.label.toLowerCase()) || STATE.entities.length >= 24) continue;
+    e.suggested = true; STATE.entities.push(e); added++;
+  }
+  STATE.activeTab = 'structure';
+  if (STATE.currentWord) analyze({ silent: true });
+  toast(added ? `${added} suggested entities added — verify them; coordinates still need to be supplied or fetched` : 'nothing new to add');
+}
+
 // ── layout ────────────────────────────────────────────────────────────────────
 function setSidebarWidth(w) { STATE.sidebarW = w; document.documentElement.style.setProperty('--sb-w', w + 'px'); }
 function initResize() {
@@ -821,6 +900,11 @@ const ACTIONS = {
   'install-cipher': installCustomCipher,
   'remove-cipher': (el) => { const k = el.dataset.c; delete STATE.customCiphers[k]; STATE.activeCiphers.delete(k); if (!STATE.activeCiphers.size) STATE.activeCiphers.add('ordinal'); rebuildCipherList(); if (STATE.currentWord) analyze({ silent: true }); },
   'mirror': (el) => el.classList.toggle('open'),
+  'ent-add': addEntityFromForm,
+  'ent-remove': (el) => { STATE.entities = STATE.entities.filter((e) => e.id !== el.dataset.id); STATE.activeTab = 'structure'; if (STATE.currentWord) analyze({ silent: true }); },
+  'ent-clear': () => { STATE.entities = []; STATE.activeTab = 'structure'; if (STATE.currentWord) analyze({ silent: true }); },
+  'ent-geo': (el) => fetchEntityCoords(el.dataset.id),
+  'ent-suggest': suggestEntities,
 };
 function wireEvents() {
   document.addEventListener('click', (e) => {
@@ -843,8 +927,12 @@ function wireEvents() {
   });
   $('compare-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addCompare(); } });
   $('custom-code').addEventListener('input', validateAndPreview);
+  document.addEventListener('change', (e) => {
+    if (e.target?.dataset?.role === 'st-cipher') { const k = e.target.value; STATE.structCipher = k in getAllCiphers() ? k : ''; STATE.activeTab = 'structure'; if (STATE.currentWord) analyze({ silent: true }); }
+  });
   document.addEventListener('keydown', (e) => {
     if (e.target.id === 'traj-input' && e.key === 'Enter') { e.preventDefault(); addTrajectory(); return; }
+    if (/^ent-(label|text|date|lat|lon)$/.test(e.target.id || '') && e.key === 'Enter') { e.preventDefault(); addEntityFromForm(); return; }
     if (e.key === 'Escape' && !$('settings-overlay').hidden) { closeSettings(); return; }
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); saveSession(); return; }
     if (e.key === '/' && !/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) { e.preventDefault(); if (isMobile()) showPanel('sidebar'); input.focus(); input.select(); }
