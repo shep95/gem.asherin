@@ -26,6 +26,13 @@ first visit it works fully offline and can be installed as an app.
   with no key needed, cached on-device for offline reuse.
 - **Optional AI readings** using your own Anthropic API key, stored encrypted
   on your device and sent nowhere else.
+- **Hidden words** — every word, name and statement the letters spell, from
+  a bundled 41,000-entry offline list plus the corpus: full anagrams, words in
+  sequence, in order with gaps, and rearranged ("bible" → lie, bile, Eli;
+  "dormitory" → "dirty room"), each with its own gematria value and
+  same-value words pulled to the top.
+- **Vowels in order** — the vowels from first to last, highlighted in place,
+  word by word, with the value split into vowel and consonant parts.
 - **Mathematical structure layer** — takes the calculator's own values as
   mathematical objects: factorisation, polygonal and Fibonacci membership, sums
   and differences of squares and cubes, rectangles, right triangles, circles and
@@ -70,6 +77,9 @@ js/ciphers.mjs        pure cipher engine (unit-tested)
 js/sanitize.mjs       allowlist sanitizer + Trusted Types policy
 js/structure.mjs      mathematical structure engine (pure, unit-tested)
 js/structure-ui.mjs   structure tab + entity workbench
+js/spells.mjs         hidden-word and vowel-order engine (pure, unit-tested)
+js/spells-ui.mjs      spells tab
+data/lexicon.txt      offline word + name list (npm run lexicon to rebuild)
 js/guard.js           console / frame / injection / host guard
 js/storage.mjs        AES-GCM device storage + response cache
 js/ai.mjs             optional Anthropic streaming client

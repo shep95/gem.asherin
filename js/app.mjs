@@ -5,7 +5,7 @@
 // data-action attribute handled by one delegated listener.
 import { CONFIG } from './config.mjs';
 import * as C from './ciphers.mjs';
-import { CORPUS_SIZE, DOMAIN_ORDER, DOMAIN_LABELS, findByOrdinal, findByReduced, findWord, groupByDomain } from './data/corpus.mjs';
+import { CORPUS, CORPUS_SIZE, DOMAIN_ORDER, DOMAIN_LABELS, findByOrdinal, findByReduced, findWord, groupByDomain } from './data/corpus.mjs';
 import * as K from './data/index.mjs';
 import * as Store from './storage.mjs';
 import { streamAI, cancelAllStreams, hasApiKey, PROMPTS } from './ai.mjs';
@@ -15,6 +15,8 @@ import * as Music from './music.mjs';
 import { setHTML, esc, escEm, swURL } from './sanitize.mjs';
 import { renderStructure, ENTITY_KINDS } from './structure-ui.mjs';
 import { parseDate, validCoord } from './structure.mjs';
+import { vowelHTML, hiddenHTML, loadLexicon } from './spells-ui.mjs';
+import { vowelOrder } from './spells.mjs';
 
 const $ = (id) => document.getElementById(id);
 const UNTRUSTED = document.documentElement.hasAttribute('data-untrusted-host');
@@ -25,7 +27,7 @@ const isMobile = () => window.innerWidth <= 680;
 const STATE = {
   mode: 'biblical',
   traditions: { hebrew: true, biblical: true, greek: true, occult: false },
-  layers: { etym: true, trad: true, root: true, phrase: true, conv: true, letters: true, sefirot: false, tarot: false, scripture: true, sources: true, structure: true },
+  layers: { etym: true, trad: true, root: true, phrase: true, conv: true, letters: true, sefirot: false, tarot: false, scripture: true, sources: true, structure: true, spells: true },
   entities: [], // structure-layer workbench: { id, label, kind, text, date, lat, lon, coordSource }
   structCipher: '', // '' = the primary cipher of the current word
   religions: { christianity: true, judaism: true, islam: false, hinduism: false, buddhism: false, taoism: false, zoroastrianism: false, sikhism: false },
@@ -517,7 +519,7 @@ function renderResult(raw, all) {
   const matchesHTML = `${primaryKey !== 'ordinal' ? `<div class="note">matching the ${esc(cipherName(primaryKey))} value ${targetOrd} against the english-ordinal corpus — equal numbers across systems, not equal spellings.</div>` : ''}<div class="matches-head"><div class="matches-title">exact matches <span class="matches-val">${esc(primaryKey === 'ordinal' ? 'ordinal' : 'value')} ${targetOrd} · ${exact.length}</span></div></div>${renderGroup(exact, 'exact')}<div class="matches-head mt"><div class="matches-title">reduced matches <span class="matches-val dim">reduced ${targetRd} (${reduced.length} words)</span></div></div><div class="note">these words share the same reduced value (${targetRd}) but different ordinal values — a softer resonance across ${reduced.length} corpus entries.</div>${renderGroup(reduced, 'reduced')}`;
 
   const tabs = [
-    { id: 'numbers', label: 'numbers', show: true }, { id: 'matches', label: 'matches', show: true },
+    { id: 'numbers', label: 'numbers', show: true }, { id: 'matches', label: 'matches', show: true }, { id: 'spells', label: 'spells', show: STATE.layers.spells },
     { id: 'breakdown', label: 'phrase', show: isPhrase && STATE.layers.phrase }, { id: 'etymology', label: 'etymology', show: STATE.layers.etym },
     { id: 'tradition', label: 'tradition', show: STATE.layers.trad && activeTL.length > 0 }, { id: 'sources', label: 'sources', show: STATE.layers.sources },
     { id: 'root', label: 'root', show: STATE.layers.root }, { id: 'structure', label: 'structure', show: STATE.layers.structure }, { id: 'predict', label: 'oracle', show: true },
@@ -530,12 +532,14 @@ function renderResult(raw, all) {
   if (scripts.includes('hebrew')) meta.push(`<span class="rw-meta-item">hebrew <span>${results.hebrew.v}</span></span>`, `<span class="rw-meta-item">reduced <span>${results.hebrew.rd}</span></span>`);
   if (scripts.includes('greek')) meta.push(`<span class="rw-meta-item">isopsephy <span>${results.greek.v}</span></span>`, `<span class="rw-meta-item">reduced <span>${results.greek.rd}</span></span>`);
   if (isPhrase) meta.push(`<span class="rw-meta-item">words <span>${words.length}</span></span>`);
+  { const vo = vowelOrder(raw); if (vo.vowels) meta.push(`<span class="rw-meta-item">vowels <span>${esc(vo.sequence.join('·'))}</span></span>`); }
   meta.push(`<span class="rw-meta-item">script <span>${scripts.map((s) => esc(C.SCRIPT_LABELS[s] || s)).join(' + ')}</span></span>`);
 
   const html = `<div class="rw"><div class="rw-head"><div class="rw-head-row"><h2 class="rw-word">${esc(raw)}</h2><button type="button" class="rw-mirror" data-action="mirror" aria-label="mirror reading">${esc(C.mirrorWord(raw))}${buildMirrorTooltip(raw, etym, results)}</button></div><div class="rw-meta">${meta.join('')}</div></div>`
     + `<div class="tabs" role="tablist">${tabHTML}</div>`
     + panel('numbers', `<div class="num-grid">${numCards}</div>${propsHTML}${unreducedHTML}${convHTML}${letterHTML}${scriptureHTML}${sefirotHTML}${tarotHTML}`)
     + panel('matches', matchesHTML)
+    + (STATE.layers.spells ? panel('spells', `${vowelHTML(raw, all, primaryKey)}<div id="spells-hidden"><div class="st-note">loading the word list…</div></div>`) : '')
     + (isPhrase && STATE.layers.phrase ? panel('breakdown', phraseHTML) : '')
     + (STATE.layers.etym ? panel('etymology', etymHTML) : '')
     + (STATE.layers.trad && activeTL.length ? panel('tradition', tradHTML) : '')
@@ -555,6 +559,7 @@ function renderResult(raw, all) {
     res.querySelectorAll('.match-row').forEach((r, i) => { r.style.animationDelay = Math.min(i, 30) * 0.03 + 's'; });
   }
   $('main-area').scrollTop = 0;
+  if (STATE.layers.spells) fillSpells(raw, all, primaryKey);
   scheduleLive(raw, results, scriptureHits, etym, tradR, activeTL);
 }
 
@@ -718,6 +723,23 @@ function installCustomCipher() {
   closeSettings();
   if (STATE.currentWord) analyze({ silent: true });
   toast(`installed “${name}”`, { label: 'save session', onClick: saveSession });
+}
+
+// ── hidden words ("spells") ─────────────────────────────────────────────────────
+let spellsToken = 0;
+const lexiconExtras = () => [
+  ...CORPUS.map((c) => ({ text: c.w, tier: c.w.includes(' ') ? 's' : 'c' })),
+  ...K.SUGGESTED.map((w) => ({ text: w, tier: w.includes(' ') ? 's' : 'c' })),
+];
+function fillSpells(raw, all, key) {
+  const token = ++spellsToken;
+  loadLexicon(lexiconExtras()).then((lex) => {
+    const el = $('spells-hidden');
+    if (token !== spellsToken || !el) return;
+    if (!lex.size) { setHTML(el, '<div class="note note-warn">the word list could not be loaded. it is cached after the first online visit.</div>'); return; }
+    try { setHTML(el, hiddenHTML(raw, lex, all, key)); }
+    catch (e) { console.warn('[uriel] hidden-word search failed', e); setHTML(el, '<div class="note note-warn">hidden-word search failed for this input.</div>'); }
+  });
 }
 
 // ── mathematical structure layer ──────────────────────────────────────────────
