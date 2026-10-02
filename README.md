@@ -31,6 +31,17 @@ first visit it works fully offline and can be installed as an app.
   sequence, in order with gaps, and rearranged ("bible" → lie, bile, Eli;
   "dormitory" → "dirty room"), each with its own gematria value and
   same-value words pulled to the top.
+- **Number geometry** — the structure tab draws the value's shapes as inline SVG:
+  the regular n-gon with all its chords, triangular and square dot figures,
+  factor-pair grids and star polygons, built from the structures the engine
+  already computes.
+- **Monte Carlo significance** — for a value's corpus match, the structure tab
+  samples 2,000 random words of the same length under the same cipher and
+  reports how often they also match, so a hit is read as rare or expected rather
+  than just asserted.
+- **Corpus match graph** — the matches tab shows the word at the centre of a
+  radial graph with every corpus word of the same value on the ring, each a
+  clickable node.
 - **Vowels in order** — the vowels from first to last, highlighted in place,
   word by word, with the value split into vowel and consonant parts.
 - **Mathematical structure layer** — takes the calculator's own values as
@@ -79,6 +90,8 @@ js/structure.mjs      mathematical structure engine (pure, unit-tested)
 js/structure-ui.mjs   structure tab + entity workbench
 js/spells.mjs         hidden-word and vowel-order engine (pure, unit-tested)
 js/spells-ui.mjs      spells tab
+js/structure.mjs also carries the Monte Carlo sampler; the structure and
+spells tabs compute lazily (only when opened) so typing stays fast
 data/lexicon.txt      offline word + name list (npm run lexicon to rebuild)
 js/guard.js           console / frame / injection / host guard
 js/storage.mjs        AES-GCM device storage + response cache

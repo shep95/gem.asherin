@@ -63,6 +63,20 @@ function algebraicHTML(alg) {
   return sec('algebraic structure', stats + (triples.length ? '<div class="sec-lbl">equations satisfied</div>' + list(triples) : '<div class="st-note">no A+B=C, A×B=C, A²+B²=C² or A²±B²=C relation among the entity values (non-match reported).</div>') + (seqs.length ? '<div class="sec-lbl">sequences</div>' + list(seqs) : '') + '<div class="sec-lbl">pairwise</div>' + pairRows);
 }
 
+// Placeholder figures the app fills with inline SVG (initStructureMount).
+function geoFigures(n, g) {
+  const figs = [];
+  const fig = (kind, label, k = 0) => `<figure class="geo-fig"><div class="geo-canvas" data-geo="${kind}" data-n="${n}" data-k="${k}"></div><figcaption>${esc(label)}</figcaption></figure>`;
+  if (n >= 3 && n <= 24) figs.push(fig('ngon', `regular ${n}-gon with all chords`));
+  else figs.push(fig('circle', `${n}° around the circle`));
+  if (g.triangle.triangularIndex) figs.push(fig('triangular', `${n} dots → triangle of ${g.triangle.triangularIndex} rows`, g.triangle.triangularIndex));
+  if (g.square.asArea.integer) figs.push(fig('square', `${n} = ${Math.round(Math.sqrt(n))}² square`, Math.round(Math.sqrt(n))));
+  else { const fp = g.rectangles.find((r) => r.a > 1 && r.a !== 1); if (fp) figs.push(fig('factorgrid', `${fp.a} × ${fp.b} grid`, fp.a)); }
+  if (n >= 5 && n <= 60) { const step = n % 2 === 0 ? (n % 3 === 0 ? 0 : 0) : (n - 1) / 2 >= 2 ? 2 : 0; const k = n >= 5 ? (Math.floor(n / 2) >= 2 ? 2 : 0) : 0; if (k >= 2 && gcdInt(n, k) === 1) figs.push(fig('star', `star polygon {${n}/${k}}`, k)); }
+  return figs.length ? `<div class="geo-figs">${figs.join('')}</div>` : '';
+}
+function gcdInt(a, b) { while (b) [a, b] = [b, a % b]; return a; }
+
 function geometryHTML(g, n) {
   if (!g) return '';
   const rects = g.rectangles.slice(0, 8).map((r) => `${r.a} × ${r.b}${r.meaningful ? ' <b>← both/one side is an entity value</b>' + labelsOf([...r.aLabels, ...r.bLabels]) : ''}`);
@@ -80,7 +94,7 @@ function geometryHTML(g, n) {
     + row('as a triangle', `equilateral side ${n} → height ${num(g.triangle.equilateralHeight)}, area ${num(g.triangle.equilateralArea)}${g.triangle.triangularIndex ? ` · ${n} dots form a triangle of ${g.triangle.triangularIndex} rows` : ''}`)
     + row('symmetry', `rotational orders ${esc(g.symmetry.rotational.join(', ') || 'none')} · ${esc(g.symmetry.reflection)}`)
     + (g.scaling.length ? row('scaling vs entities', list(g.scaling.map((s) => `${n} : ${s.value} (${esc(s.label)}) = ${esc(s.fraction)}`))) : '');
-  return sec('geometric structure', body, 'geometric readings are only flagged (bold) when a dimension is independently an entity value; the rest are the shapes the number can occupy.');
+  return sec('geometric structure', geoFigures(n, g) + body, 'geometric readings are only flagged (bold) when a dimension is independently an entity value; the rest are the shapes the number can occupy.');
 }
 
 function temporalHTML(t) {
@@ -185,11 +199,33 @@ export function renderStructure({ raw, all, activeKeys, primaryKey, cipherKey, u
   const letters = [...C.lettersOnly(raw)].map((ch) => valueOf(ch, all, key));
   const report = S.analyze(entities, { corpusLookup, words, letters });
   const head = `<div class="st-head"><div class="st-head-n">${report.n}</div><div class="st-head-t">existing gematria result · ${esc(all[key]?.name || key)} · “${esc(raw)}”</div></div>`;
+  const significanceSec = significanceHTML(raw, all, key, report.n, corpusLookup);
   const interp = sec('interpretation', `<div class="st-note">everything above the verdict is arithmetic fact about the calculator's output: factorisations, shapes, intervals and distances are computed, not read into. the <em>verdict</em> and any “meaningful” flags are hypotheses about whether independent measurements coincide; they are only as strong as the test counts and chance baselines shown beside them.</div>`);
   const entitiesWithValues = entities.slice(1);
   return `<div class="st-wrap">${workbenchHTML(entitiesWithValues, all, activeKeys, key, primaryKey, { sources, ai })}${head}`
     + arithmeticHTML(report.arithmetic) + algebraicHTML(report.algebraic) + geometryHTML(report.geometry, report.n)
     + temporalHTML(report.temporal) + spatialHTML(report.spatial) + networkHTML(entities, report.algebraic, report.temporal, report.spatial)
-    + convergenceHTML(report.convergence, report.nearby) + alternativesHTML(report, all, activeKeys, key) + reverseHTML(report.reverse) + multiScaleHTML(report.multiScale)
+    + convergenceHTML(report.convergence, report.nearby) + significanceSec + alternativesHTML(report, all, activeKeys, key) + reverseHTML(report.reverse) + multiScaleHTML(report.multiScale)
     + interp + '</div>';
 }
+
+const LETTER_FREQ = 'eeeeeeeeeeeettttttttttaaaaaaaaoooooooiiiiiiinnnnnnsssssshhhhhhrrrrrrddddllllcccuuummmwwffggyyppbbvkjxqz';
+function significanceHTML(raw, all, key, n, corpusLookup) {
+  const len = C.lettersOnly(raw).length;
+  const fn = all[key]?.fn;
+  if (!fn || len < 1 || len > 40) return '';
+  const isHit = (v) => corpusLookup(v).length > 0;
+  const observedHit = isHit(n);
+  const sampleValue = (rng) => {
+    let w = '';
+    for (let i = 0; i < len; i++) w += LETTER_FREQ[(rng() * LETTER_FREQ.length) | 0];
+    try { const v = fn(w); return typeof v === 'number' && Number.isFinite(v) ? Math.round(v) : 0; } catch { return 0; }
+  };
+  const mc = S.monteCarloMatch({ trials: 2000, sampleValue, isHit, observedHit, observedValue: n });
+  const cls = mc.observedHit ? (mc.rate < 0.05 ? 'hi' : mc.rate < 0.2 ? 'mid' : 'lo') : 'lo';
+  const body = row('corpus match', observedHit ? `yes — ${esc(cipherLabel(all, key))} value ${n} appears in the corpus` : `no — value ${n} is not a corpus value`)
+    + row('random baseline', `${(mc.rate * 100).toFixed(1)}% of ${mc.trials.toLocaleString()} random ${len}-letter words (english letter frequencies) produce a value that also lands a corpus match`)
+    + row('reading', `<b class="st-${cls}">${esc(mc.verdict)}</b>`);
+  return sec('significance (monte carlo)', body, 'a gematria match means more when few random words of the same length would also match. this samples ' + '2,000 random words under the same cipher and reports how often they hit — the match\'s rarity, computed rather than asserted.');
+}
+function cipherLabel(all, key) { return all[key]?.name || key; }

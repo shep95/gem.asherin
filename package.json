@@ -1,6 +1,6 @@
 {
   "name": "uriel-gematria",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Uriel — gematria, isopsephy and numerology engine. Static, private, offline-capable.",
   "private": true,
   "type": "module",

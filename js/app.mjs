@@ -516,7 +516,10 @@ function renderResult(raw, all) {
     if (!Object.keys(by).length) return `<div class="note">no ${type} matches in the visible corpus domains.</div>`;
     return DOMAIN_ORDER.filter((d) => by[d]?.length).map((d) => `<div class="match-domain"><div class="match-domain-lbl">${esc(DOMAIN_LABELS[d] || d)}</div>${by[d].map((it) => `<button type="button" class="match-row" data-action="analyze-word" data-w="${esc(it.w)}"><span class="match-word">${esc(it.w)}</span><span class="match-ord">${it.o}</span><span class="match-note">${esc(it.n)}</span></button>`).join('')}</div>`).join('');
   };
-  const matchesHTML = `${primaryKey !== 'ordinal' ? `<div class="note">matching the ${esc(cipherName(primaryKey))} value ${targetOrd} against the english-ordinal corpus — equal numbers across systems, not equal spellings.</div>` : ''}<div class="matches-head"><div class="matches-title">exact matches <span class="matches-val">${esc(primaryKey === 'ordinal' ? 'ordinal' : 'value')} ${targetOrd} · ${exact.length}</span></div></div>${renderGroup(exact, 'exact')}<div class="matches-head mt"><div class="matches-title">reduced matches <span class="matches-val dim">reduced ${targetRd} (${reduced.length} words)</span></div></div><div class="note">these words share the same reduced value (${targetRd}) but different ordinal values — a softer resonance across ${reduced.length} corpus entries.</div>${renderGroup(reduced, 'reduced')}`;
+  // base64 the payload: the sanitizer strips data-* attributes containing quotes
+  // (attribute-breakout defense), and JSON is full of them.
+  const graphData = b64encode(JSON.stringify({ word: raw, value: targetOrd, nodes: exact.slice(0, 16).map((m) => ({ w: m.w, d: m.d })) }));
+  const matchesHTML = `${primaryKey !== 'ordinal' ? `<div class="note">matching the ${esc(cipherName(primaryKey))} value ${targetOrd} against the english-ordinal corpus — equal numbers across systems, not equal spellings.</div>` : ''}${exact.length ? `<div class="match-graph" data-graph="${esc(graphData)}" aria-label="words sharing this value"></div>` : ''}<div class="matches-head"><div class="matches-title">exact matches <span class="matches-val">${esc(primaryKey === 'ordinal' ? 'ordinal' : 'value')} ${targetOrd} · ${exact.length}</span></div></div>${renderGroup(exact, 'exact')}<div class="matches-head mt"><div class="matches-title">reduced matches <span class="matches-val dim">reduced ${targetRd} (${reduced.length} words)</span></div></div><div class="note">these words share the same reduced value (${targetRd}) but different ordinal values — a softer resonance across ${reduced.length} corpus entries.</div>${renderGroup(reduced, 'reduced')}`;
 
   const tabs = [
     { id: 'numbers', label: 'numbers', show: true }, { id: 'matches', label: 'matches', show: true }, { id: 'spells', label: 'spells', show: STATE.layers.spells },
@@ -539,14 +542,19 @@ function renderResult(raw, all) {
     + `<div class="tabs" role="tablist">${tabHTML}</div>`
     + panel('numbers', `<div class="num-grid">${numCards}</div>${propsHTML}${unreducedHTML}${convHTML}${letterHTML}${scriptureHTML}${sefirotHTML}${tarotHTML}`)
     + panel('matches', matchesHTML)
-    + (STATE.layers.spells ? panel('spells', `${vowelHTML(raw, all, primaryKey)}<div id="spells-hidden"><div class="st-note">loading the word list…</div></div>`) : '')
+    + (STATE.layers.spells ? panel('spells', '<div id="spells-mount" class="lazy-panel"><div class="st-note">open this tab to analyse…</div></div>') : '')
     + (isPhrase && STATE.layers.phrase ? panel('breakdown', phraseHTML) : '')
     + (STATE.layers.etym ? panel('etymology', etymHTML) : '')
     + (STATE.layers.trad && activeTL.length ? panel('tradition', tradHTML) : '')
     + (STATE.layers.sources ? panel('sources', sourcesHTML) : '')
     + (STATE.layers.root ? panel('root', rootHTML) : '')
-    + (STATE.layers.structure ? panel('structure', structureHTML(raw, all, activeKeys, primaryKey)) : '')
+    + (STATE.layers.structure ? panel('structure', '<div id="structure-mount" class="lazy-panel"><div class="st-note">open this tab to analyse…</div></div>') : '')
     + panel('predict', oracleHTML) + '</div>';
+
+  // Context for the lazy (heavy) panels: computed only when their tab is shown,
+  // never on every keystroke. See fillLazyPanel / switchTab.
+  lazyCtx = { raw, all, activeKeys, primaryKey };
+  lazyRendered = { structure: false, spells: false };
 
   $('m-empty').hidden = true;
   const res = $('result'); res.hidden = false; res.classList.remove('stale');
@@ -554,13 +562,33 @@ function renderResult(raw, all) {
   // post-render: widths and colours via CSSOM (no inline style attributes under the strict CSP)
   res.querySelectorAll('[data-pct]').forEach((el) => { el.style.width = Math.max(0, Math.min(100, parseInt(el.dataset.pct, 10) || 0)) + '%'; });
   res.querySelectorAll('.sef-dot[data-col]').forEach((el) => { if (/^#[0-9a-f]{6}$/i.test(el.dataset.col)) el.style.background = el.dataset.col; });
+  res.querySelectorAll('.match-graph[data-graph]').forEach((el) => { try { el.replaceChildren(buildMatchGraph(JSON.parse(b64decode(el.dataset.graph)))); } catch { /* ignore */ } });
   if (!REDUCED_MOTION) {
     res.querySelectorAll('.num-card').forEach((c, i) => { c.style.animationDelay = (i * 0.06) + 's'; });
     res.querySelectorAll('.match-row').forEach((r, i) => { r.style.animationDelay = Math.min(i, 30) * 0.03 + 's'; });
   }
   $('main-area').scrollTop = 0;
-  if (STATE.layers.spells) fillSpells(raw, all, primaryKey);
+  if (STATE.activeTab === 'structure' || STATE.activeTab === 'spells') fillLazyPanel(STATE.activeTab);
   scheduleLive(raw, results, scriptureHits, etym, tradR, activeTL);
+}
+
+// ── lazy heavy panels ─────────────────────────────────────────────────────────
+// The structure and spells tabs run the costly analyses. They are built only
+// when their tab is actually shown, and once per word, so typing stays fast.
+let lazyCtx = null;
+let lazyRendered = { structure: false, spells: false };
+function fillLazyPanel(id) {
+  if (!lazyCtx || (id !== 'structure' && id !== 'spells')) return;
+  if (lazyRendered[id]) return;
+  lazyRendered[id] = true;
+  const { raw, all, activeKeys, primaryKey } = lazyCtx;
+  if (id === 'structure') {
+    const mount = $('structure-mount');
+    if (mount) { try { setHTML(mount, structureBody(raw, all, activeKeys, primaryKey)); initStructureMount(mount); } catch (e) { console.warn('[uriel] structure failed', e); setHTML(mount, '<div class="note note-warn">the structure layer could not analyse this input.</div>'); } }
+  } else {
+    const mount = $('spells-mount');
+    if (mount) { setHTML(mount, `${vowelHTML(raw, all, primaryKey)}<div id="spells-hidden"><div class="st-note">loading the word list…</div></div>`); fillSpells(raw, all, primaryKey); }
+  }
 }
 
 // ── live data (AI + keyless sources) ──────────────────────────────────────────
@@ -615,6 +643,7 @@ function switchTab(id) {
   STATE.activeTab = id;
   document.querySelectorAll('.tab').forEach((t) => { const on = t.dataset.tab === id; t.classList.toggle('on', on); t.setAttribute('aria-selected', on ? 'true' : 'false'); });
   document.querySelectorAll('.panel').forEach((p) => p.classList.toggle('on', p.id === 'p-' + id));
+  if (id === 'structure' || id === 'spells') fillLazyPanel(id);
   if (id === 'sources' && pendingSources) loadSources(pendingSources.raw, pendingSources.scriptureHits, pendingSources.token);
 }
 
@@ -745,16 +774,91 @@ function fillSpells(raw, all, key) {
 // ── mathematical structure layer ──────────────────────────────────────────────
 // Sits on top of the existing calculation: every value it analyses is the
 // unchanged output of calcWord under the selected cipher.
-function structureHTML(raw, all, activeKeys, primaryKey) {
-  try {
-    return renderStructure({
-      raw, all, activeKeys, primaryKey, cipherKey: STATE.structCipher || primaryKey, userEntities: STATE.entities,
-      corpusLookup: (v) => findByOrdinal(v).map((i) => i.w), sources: STATE.sources && !hostBlocksNetwork(), ai: STATE.aiKey && !hostBlocksNetwork(),
-    });
-  } catch (e) {
-    console.warn('[uriel] structure layer failed', e);
-    return '<div class="note note-warn">the structure layer could not analyse this input.</div>';
+function structureBody(raw, all, activeKeys, primaryKey) {
+  return renderStructure({
+    raw, all, activeKeys, primaryKey, cipherKey: STATE.structCipher || primaryKey, userEntities: STATE.entities,
+    corpusLookup: (v) => findByOrdinal(v).map((i) => i.w), sources: STATE.sources && !hostBlocksNetwork(), ai: STATE.aiKey && !hostBlocksNetwork(),
+  });
+}
+// Render the inline-SVG number-geometry figures the structure body requested.
+function initStructureMount(root) {
+  root.querySelectorAll('[data-geo]').forEach((el) => {
+    try { el.replaceChildren(buildGeoSVG(el.dataset.geo, +el.dataset.n || 0, +el.dataset.k || 0)); } catch { /* ignore */ }
+  });
+}
+
+// unicode-safe base64 for small data-attribute payloads
+function b64encode(str) { return btoa(unescape(encodeURIComponent(str))); }
+function b64decode(b64) { return decodeURIComponent(escape(atob(b64))); }
+
+// ── number geometry (inline SVG, built via DOM — no HTML string sink) ─────────
+const SVGNS = 'http://www.w3.org/2000/svg';
+function svg(tag, attrs) { const e = document.createElementNS(SVGNS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; }
+function geoFrame(title) {
+  const s = svg('svg', { viewBox: '0 0 200 200', class: 'geo-svg', role: 'img', 'aria-label': title, preserveAspectRatio: 'xMidYMid meet' });
+  return s;
+}
+const polyPoints = (cx, cy, r, sides, rot = -Math.PI / 2) => Array.from({ length: sides }, (_, i) => { const a = rot + i * 2 * Math.PI / sides; return [cx + r * Math.cos(a), cy + r * Math.sin(a)]; });
+
+// Radial graph: the word at the centre, every corpus word of the same value on a
+// ring, each a clickable node. Shows the shared-number neighbourhood at a glance.
+function buildMatchGraph(data) {
+  const W = 480, H = 240, cx = W / 2, cy = H / 2;
+  const s = svg('svg', { viewBox: `0 0 ${W} ${H}`, class: 'mg-svg', role: 'img', 'aria-label': `words sharing value ${data.value}` });
+  const nodes = (data.nodes || []).slice(0, 16);
+  const R = Math.min(cy - 28, 96);
+  nodes.forEach((nd, i) => {
+    const a = -Math.PI / 2 + i * 2 * Math.PI / Math.max(nodes.length, 1);
+    const x = cx + R * Math.cos(a), y = cy + R * Math.sin(a) * 0.82;
+    s.appendChild(svg('line', { x1: cx, y1: cy, x2: x.toFixed(1), y2: y.toFixed(1), stroke: 'var(--ln)', 'stroke-width': 0.7 }));
+    const g = svg('g', { class: 'mg-node', tabindex: '0', role: 'button', 'aria-label': nd.w });
+    g.dataset.action = 'analyze-word'; g.dataset.w = nd.w;
+    g.appendChild(svg('circle', { cx: x.toFixed(1), cy: y.toFixed(1), r: 3, fill: 'var(--a)', 'fill-opacity': 0.5 }));
+    const t = svg('text', { x: x.toFixed(1), y: (y + (Math.sin(a) >= 0 ? 13 : -7)).toFixed(1), 'text-anchor': 'middle', class: 'mg-label' });
+    t.textContent = nd.w.length > 16 ? nd.w.slice(0, 15) + '…' : nd.w;
+    g.appendChild(t); s.appendChild(g);
+  });
+  s.appendChild(svg('circle', { cx, cy, r: 20, fill: 'var(--a2)', stroke: 'var(--a)', 'stroke-width': 1 }));
+  const val = svg('text', { x: cx, y: cy - 2, 'text-anchor': 'middle', class: 'mg-center-v' }); val.textContent = String(data.value); s.appendChild(val);
+  const wd = svg('text', { x: cx, y: cy + 11, 'text-anchor': 'middle', class: 'mg-center-w' }); wd.textContent = data.word.length > 14 ? data.word.slice(0, 13) + '…' : data.word; s.appendChild(wd);
+  return s;
+}
+
+/** kind: ngon | triangular | square | factorgrid | star | circle. n is the value; k a secondary (star step / grid side). */
+function buildGeoSVG(kind, n, k) {
+  const s = geoFrame(`${kind} figure for ${n}`);
+  const accent = 'var(--a)', dim = 'var(--t3)', line = 'var(--ln)';
+  const dot = (x, y, r = 2.4, fill = accent, op = 1) => svg('circle', { cx: x.toFixed(2), cy: y.toFixed(2), r, fill, opacity: op });
+  if (kind === 'ngon' && n >= 3 && n <= 24) {
+    const pts = polyPoints(100, 100, 78, n);
+    s.appendChild(svg('polygon', { points: pts.map((p) => p.map((v) => v.toFixed(2)).join(',')).join(' '), fill: 'none', stroke: accent, 'stroke-width': 1, 'stroke-opacity': 0.7 }));
+    // all chords, faint — the figure's internal structure
+    for (let i = 0; i < n; i++) for (let j = i + 2; j < n; j++) { if (i === 0 && j === n - 1) continue; s.appendChild(svg('line', { x1: pts[i][0].toFixed(2), y1: pts[i][1].toFixed(2), x2: pts[j][0].toFixed(2), y2: pts[j][1].toFixed(2), stroke: line, 'stroke-width': 0.4 })); }
+    pts.forEach(([x, y]) => s.appendChild(dot(x, y, 2.6)));
+  } else if (kind === 'star' && n >= 5 && k >= 2) {
+    const pts = polyPoints(100, 100, 80, n);
+    let seq = ''; let idx = 0;
+    for (let c = 0; c <= n; c++) { const p = pts[idx % n]; seq += `${c === 0 ? 'M' : 'L'}${p[0].toFixed(2)} ${p[1].toFixed(2)} `; idx += k; }
+    s.appendChild(svg('path', { d: seq, fill: 'none', stroke: accent, 'stroke-width': 1, 'stroke-opacity': 0.8, 'stroke-linejoin': 'round' }));
+    pts.forEach(([x, y]) => s.appendChild(dot(x, y, 2)));
+  } else if (kind === 'triangular') {
+    // rows of dots forming a triangle; row r has r dots
+    const rows = k || Math.round((Math.sqrt(8 * n + 1) - 1) / 2);
+    const gap = Math.min(150 / Math.max(rows, 1), 26), top = 100 - rows * gap * 0.43, cx = 100;
+    for (let r = 1; r <= rows; r++) for (let c = 0; c < r; c++) { const x = cx - (r - 1) * gap / 2 + c * gap, y = top + (r - 1) * gap * 0.87; s.appendChild(dot(x, y, Math.max(1.6, gap * 0.16))); }
+  } else if (kind === 'square' || kind === 'factorgrid') {
+    const cols = k || Math.round(Math.sqrt(n)); const rows = Math.max(1, Math.round(n / cols));
+    const gap = Math.min(150 / Math.max(cols, rows, 1), 24), x0 = 100 - (cols - 1) * gap / 2, y0 = 100 - (rows - 1) * gap / 2;
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) s.appendChild(dot(x0 + c * gap, y0 + r * gap, Math.max(1.4, gap * 0.16)));
+    s.appendChild(svg('rect', { x: (x0 - gap / 2).toFixed(2), y: (y0 - gap / 2).toFixed(2), width: (cols * gap).toFixed(2), height: (rows * gap).toFixed(2), fill: 'none', stroke: line, 'stroke-width': 0.6 }));
+  } else if (kind === 'circle') {
+    s.appendChild(svg('circle', { cx: 100, cy: 100, r: 80, fill: 'none', stroke: accent, 'stroke-width': 1, 'stroke-opacity': 0.6 }));
+    const ticks = Math.min(n, 72);
+    for (let i = 0; i < ticks; i++) { const a = -Math.PI / 2 + i * 2 * Math.PI / ticks; s.appendChild(svg('line', { x1: (100 + 74 * Math.cos(a)).toFixed(2), y1: (100 + 74 * Math.sin(a)).toFixed(2), x2: (100 + 80 * Math.cos(a)).toFixed(2), y2: (100 + 80 * Math.sin(a)).toFixed(2), stroke: dim, 'stroke-width': 0.8 })); }
+  } else {
+    s.appendChild(svg('text', { x: 100, y: 105, 'text-anchor': 'middle', fill: dim, 'font-size': 12, 'font-family': 'monospace' })).textContent = String(n);
   }
+  return s;
 }
 function sanitizeEntity(e) {
   if (!isPlainObj(e)) return null;

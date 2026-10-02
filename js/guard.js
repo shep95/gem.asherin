@@ -92,7 +92,7 @@
     Object.defineProperty(window, 'uriel', {
       configurable: false, enumerable: false, writable: false,
       value: Object.freeze({
-        version: '2.2.0',
+        version: '2.3.0',
         guard: Object.freeze({ get flags() { return Object.freeze(Object.assign({}, FLAGS)); } }),
         source: 'https://github.com/shep95/gem.asherin',
       }),

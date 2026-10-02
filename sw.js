@@ -1,6 +1,6 @@
 /* Uriel service worker — offline-first app shell, runtime caching for fonts
  * and keyless data APIs. Bump VERSION whenever a precached file changes. */
-const VERSION = 'uriel-v2.2.0';
+const VERSION = 'uriel-v2.3.0';
 const SHELL = `${VERSION}-shell`;
 const RUNTIME = `${VERSION}-runtime`;
 const DATA = `${VERSION}-data`;

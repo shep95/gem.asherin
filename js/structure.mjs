@@ -309,6 +309,41 @@ export function multiScale(phraseValue, words, letters) {
   return { phrase: { value: phraseValue, tags: [...phraseTags] }, words: wordTags, recurring, letters: letterStats };
 }
 
+// ── Monte Carlo significance ──────────────────────────────────────────────────
+/**
+ * Empirical answer to "is this match unusual, or expected for a word this size?"
+ * Runs `trials` random draws; `sampleValue()` returns the gematria value of a
+ * random word of the same length under the same cipher, `isHit(v)` says whether
+ * that value lands a corpus match. Compares the random hit-rate to the real word.
+ * Pure: all randomness and scoring are supplied or computed here, nothing mocked.
+ */
+export function monteCarloMatch({ trials = 2000, sampleValue, isHit, observedHit, observedValue }) {
+  let hits = 0;
+  const rng = mulberry32((observedValue || 1) * 2654435761 >>> 0); // deterministic per value → stable UI
+  for (let i = 0; i < trials; i++) if (isHit(sampleValue(rng))) hits++;
+  const rate = hits / trials;
+  // rarity of the observed outcome: if the word hit, how surprising given the base rate
+  let rarity, verdict;
+  if (observedHit) {
+    rarity = rate; // p ≈ chance a random word of this length also hits
+    verdict = rate < 0.01 ? 'rare — under 1% of random words this size land a corpus match' : rate < 0.05 ? 'uncommon — a few percent of random words this size would match' : rate < 0.2 ? 'common — many random words this size match' : 'expected — most random words this size match something';
+  } else {
+    rarity = 1 - rate;
+    verdict = 'no corpus match (neither did ' + Math.round((1 - rate) * 100) + '% of random words this size)';
+  }
+  return { trials, hits, rate: +rate.toFixed(4), observedHit: !!observedHit, rarity: +rarity.toFixed(4), verdict };
+}
+
+/** Small deterministic PRNG so the significance figure is stable between renders. */
+export function mulberry32(a) {
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
 // ── anti-cherry-picking: nearby density ───────────────────────────────────────
 /**
  * For an equality hit between quantity q and an entity value, how many of the

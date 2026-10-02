@@ -6,7 +6,7 @@
 // (require-trusted-types-for 'script') makes this the ONLY way to reach a
 // string-to-HTML sink, so an escaping bug elsewhere cannot become XSS.
 
-const TAGS = new Set(['div', 'span', 'p', 'b', 'i', 'em', 'strong', 'small', 'br', 'ol', 'ul', 'li', 'button', 'a', 'img', 'input', 'h2', 'h3', 'label', 'details', 'summary', 'code', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'select', 'option']);
+const TAGS = new Set(['div', 'span', 'p', 'b', 'i', 'em', 'strong', 'small', 'br', 'ol', 'ul', 'li', 'button', 'a', 'img', 'input', 'h2', 'h3', 'label', 'details', 'summary', 'code', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'select', 'option', 'figure', 'figcaption']);
 const ATTRS = new Set(['class', 'id', 'title', 'role', 'tabindex', 'hidden', 'type', 'placeholder', 'maxlength', 'autocomplete', 'autocapitalize', 'spellcheck', 'enterkeyhint', 'value', 'alt', 'loading', 'decoding', 'width', 'height', 'rel', 'target', 'lang', 'dir', 'for', 'open', 'referrerpolicy', 'selected', 'colspan', 'inputmode', 'name', 'scope']);
 const URL_ATTRS = { href: /^(https:\/\/[^\s]+|\.\/[^\s]*|\?[^\s]*|#[\w\-]*)$/i, src: /^https:\/\/upload\.wikimedia\.org\/[^\s]+$/i };
 

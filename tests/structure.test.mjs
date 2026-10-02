@@ -108,3 +108,18 @@ test('reverse search, multi-scale, nearby density and convergence', () => {
   assert.ok(['possible match', 'multiple independent correspondences', 'statistically unusual correspondence'].includes(full.convergence.verdict));
   assert.ok(full.nearby.length >= 1);
 });
+
+test('monte carlo significance is deterministic and bounded', () => {
+  const rngVals = (seed, k) => { const r = S.mulberry32(seed); return Array.from({ length: k }, () => r()); };
+  assert.deepEqual(rngVals(42, 3), rngVals(42, 3), 'same seed → same stream');
+  assert.ok(rngVals(1, 100).every((v) => v >= 0 && v < 1));
+  const a = S.monteCarloMatch({ trials: 1000, sampleValue: (rng) => Math.round(rng() * 100), isHit: (v) => v === 50, observedHit: true, observedValue: 50 });
+  const b = S.monteCarloMatch({ trials: 1000, sampleValue: (rng) => Math.round(rng() * 100), isHit: (v) => v === 50, observedHit: true, observedValue: 50 });
+  assert.equal(a.rate, b.rate, 'stable between calls for the same value');
+  assert.ok(a.rate >= 0 && a.rate <= 1);
+  assert.equal(a.observedHit, true);
+  const miss = S.monteCarloMatch({ trials: 500, sampleValue: (rng) => Math.round(rng() * 100), isHit: (v) => v === 9999, observedHit: false, observedValue: 12 });
+  assert.equal(miss.hits, 0);
+  assert.equal(miss.rate, 0);
+  assert.equal(miss.observedHit, false);
+});
